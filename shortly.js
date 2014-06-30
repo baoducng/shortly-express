@@ -15,7 +15,7 @@ app.configure(function() {
   app.set('views', __dirname + '/views');
   app.set('view engine', 'ejs');
   app.use(partials());
-  app.use(express.bodyParser())
+  app.use(express.bodyParser());
   app.use(express.static(__dirname + '/public'));
 });
 
@@ -27,10 +27,36 @@ app.get('/create', function(req, res) {
   res.render('index');
 });
 
+app.get('/signup', function(req, res) {
+  res.render('signup');
+});
+
+
 app.get('/links', function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
-  })
+  });
+});
+
+app.post('/signup', function(req, res){
+  var username = req.body.username;
+  var password = req.body.password;
+  //todo: username unique;
+  var user = new User({username: username}).fetch().then(function(found) {
+    if (found) {
+      res.redirect('/');
+    } else {
+      var newUser = new User({
+        username: username,
+        password: password
+      });
+      newUser.save().then(function(myUser) {
+        Users.add(myUser);
+        // need to render index page...
+        res.redirect('/');
+      });
+    }
+  });
 });
 
 app.post('/links', function(req, res) {
